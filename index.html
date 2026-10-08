@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Eva Flow · Separação de pedidos em tempo real · Eva Connect</title>
+<meta name="description" content="Eva Flow organiza a separação de pedidos: vendas registra, o estoque recebe alerta e separa, o cliente acompanha na TV e a gestão vê tudo em tempo real. Um produto Eva Connect.">
+<meta name="theme-color" content="#ffffff">
+<meta property="og:title" content="Eva Flow · Fluxos operacionais">
+<meta property="og:description" content="Do balcão ao estoque, sem papel e sem correria. Separação de pedidos com painel de TV, alertas e controle de pagamento.">
+<meta property="og:image" content="assets/tv-claro.png">
+<link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --white:#FFFFFF; --bg:#FFFFFF; --soft:#F7F3FF; --soft-2:#EFE7FF;
+  --ink:#1E1433; --muted:#5F5675; --line:#E9E1FA;
+  --purple:#5B21B6; --purple-2:#7C3AED; --purple-dark:#2E1065; --lilac:#C4B5FD; --lilac-2:#DDD0FE;
+  --font:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --r:20px; --shadow:0 24px 60px -24px rgba(76,29,149,.35); --shadow-s:0 10px 30px -14px rgba(76,29,149,.3);
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:84px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+img{max-width:100%;height:auto;display:block}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--purple-2);outline-offset:3px;border-radius:6px}
+.wrap{max-width:1200px;margin:0 auto;padding:0 20px}
+h1,h2,h3{margin:0;line-height:1.08;letter-spacing:-.025em;font-weight:800}
+h2{font-size:clamp(2rem,4.2vw,3.1rem)}
+h3{font-size:1.3rem;letter-spacing:-.01em}
+.label{display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:.82rem;color:var(--purple);background:var(--soft-2);padding:6px 14px;border-radius:999px;margin-bottom:18px}
+.label::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--purple-2)}
+.lead{font-size:1.15rem;color:var(--muted);max-width:680px;margin:16px 0 0}
+section{padding:96px 0;position:relative}
+.soft{background:var(--soft)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:52px;padding:12px 26px;border-radius:999px;font-weight:700;text-decoration:none;border:2px solid transparent;font-size:1rem;cursor:pointer;font-family:inherit;transition:transform .15s ease, box-shadow .15s ease, background .15s ease}
+.btn:hover{transform:translateY(-1px)}
+.btn-primary{background:linear-gradient(135deg,var(--purple-2),var(--purple));color:#fff;box-shadow:0 12px 30px -12px rgba(91,33,182,.7)}
+.btn-outline{border-color:var(--lilac);color:var(--purple);background:#fff}
+.btn-outline:hover{border-color:var(--purple-2)}
+.btn-white{background:#fff;color:var(--purple)}
+.btn-ghost-w{border-color:rgba(255,255,255,.5);color:#fff}
+.btn-ghost-w:hover{border-color:#fff}
+.btn svg{flex:none}
+
+/* Topo */
+header.top{position:sticky;top:0;z-index:30;background:rgba(255,255,255,.88);backdrop-filter:saturate(1.4) blur(12px);border-bottom:1px solid transparent;transition:border-color .2s}
+header.top.scrolled{border-bottom-color:var(--line)}
+.nav{display:flex;align-items:center;gap:24px;min-height:72px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none}
+.brand img{width:38px;height:38px}
+.brand b{font-size:1.25rem;font-weight:800;letter-spacing:-.02em;color:var(--purple-dark)}
+.brand small{display:block;font-size:.72rem;color:var(--muted);font-weight:600;margin-top:-4px}
+.nav ul{display:flex;gap:28px;list-style:none;margin:0 0 0 auto;padding:0}
+.nav ul a{text-decoration:none;color:var(--muted);font-weight:600;font-size:.95rem}
+.nav ul a:hover{color:var(--purple)}
+.nav .btn{min-height:44px;padding:8px 20px;font-size:.95rem}
+@media (max-width:920px){.nav ul{display:none}.nav .btn{margin-left:auto}}
+
+/* Hero */
+.hero{padding:72px 0 64px;overflow:hidden}
+.blob{position:absolute;border-radius:50%;filter:blur(60px);opacity:.55;pointer-events:none;z-index:0}
+.blob.a{width:520px;height:520px;background:#DDD0FE;right:-120px;top:-80px}
+.blob.b{width:380px;height:380px;background:#EDE4FF;left:-140px;bottom:-120px}
+.hero .wrap{position:relative;z-index:1}
+.hero-grid{display:grid;grid-template-columns:1fr 1.1fr;gap:56px;align-items:center}
+.hero h1{font-size:clamp(2.6rem,5.4vw,4.4rem)}
+.hero h1 span{background:linear-gradient(120deg,var(--purple-2),var(--purple) 60%,#9F67FF);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p.sub{font-size:1.18rem;color:var(--muted);max-width:540px;margin:22px 0 30px}
+.hero .acts{display:flex;gap:12px;flex-wrap:wrap}
+.points{display:flex;flex-direction:column;gap:10px;margin-top:30px}
+.points div{display:flex;gap:12px;align-items:flex-start;font-weight:500}
+.points svg{flex:none;margin-top:3px}
+.device{background:#1A1030;border-radius:22px;padding:12px;box-shadow:var(--shadow)}
+.device img{border-radius:12px}
+.device-stand{width:28%;height:18px;margin:0 auto;background:linear-gradient(#D9CEF7,#EFE9FC);border-radius:0 0 12px 12px}
+.floating{position:absolute;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow-s);padding:12px 16px;display:flex;gap:12px;align-items:center;font-size:.9rem;font-weight:600}
+.floating i{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-style:normal}
+.floating small{display:block;color:var(--muted);font-weight:500;font-size:.8rem}
+.hero-visual{position:relative}
+.f1{left:-28px;bottom:42px}
+.f2{right:-14px;top:-22px}
+@media (max-width:960px){.hero-grid{grid-template-columns:1fr}.f1{left:8px}.f2{right:8px}}
+@media (max-width:520px){.floating{display:none}}
+
+/* Faixa de recursos */
+.marquee{border-block:1px solid var(--line);background:#fff;overflow:hidden;padding:18px 0}
+.track{display:flex;gap:14px;width:max-content;animation:scroll 38s linear infinite}
+.chip{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:999px;background:var(--soft);color:var(--purple-dark);font-weight:600;white-space:nowrap;font-size:.95rem}
+.chip::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--lilac)}
+@keyframes scroll{to{transform:translateX(-50%)}}
+.marquee:hover .track{animation-play-state:paused}
+
+/* Carrossel de frentes */
+.head-row{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap}
+.car-ctrl{display:flex;gap:10px;align-items:center;color:var(--muted);font-size:.9rem;font-weight:600}
+.car-ctrl button{width:46px;height:46px;border-radius:50%;border:1.5px solid var(--lilac);background:#fff;color:var(--purple);cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+.car-ctrl button:hover{border-color:var(--purple-2)}
+.carousel{display:flex;gap:22px;overflow-x:auto;scroll-snap-type:x mandatory;padding:36px 20px 24px;margin:0 -20px;scrollbar-width:none}
+.carousel::-webkit-scrollbar{display:none}
+.front{flex:0 0 min(560px,86vw);scroll-snap-align:start;background:#fff;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow-s);display:flex;flex-direction:column}
+.front .pic{background:var(--soft);padding:18px 18px 0;border-bottom:1px solid var(--line)}
+.front .pic img{border-radius:10px 10px 0 0;box-shadow:0 -4px 24px -10px rgba(76,29,149,.3)}
+.front .txt{padding:24px 26px 28px}
+.front .num{font-weight:800;color:var(--purple-2);font-size:.85rem;letter-spacing:.06em}
+.front h3{margin:6px 0 12px}
+.front ul{margin:0;padding:0;list-style:none}
+.front li{position:relative;padding-left:26px;margin:7px 0;color:var(--muted);font-size:.97rem}
+.front li::before{content:"";position:absolute;left:0;top:.5em;width:14px;height:8px;border-left:2.5px solid var(--purple-2);border-bottom:2.5px solid var(--purple-2);transform:rotate(-45deg)}
+
+/* Experimente */
+.sim{display:grid;grid-template-columns:.9fr 1.1fr;gap:48px;align-items:center}
+.sim-ctrl{display:flex;gap:12px;flex-wrap:wrap;margin-top:26px}
+.sim-steps{margin:26px 0 0;padding:0;list-style:none;display:grid;gap:12px}
+.sim-steps li{display:flex;gap:12px;align-items:center;color:var(--muted)}
+.sim-steps b{display:inline-flex;width:30px;height:30px;border-radius:50%;background:var(--soft-2);color:var(--purple);align-items:center;justify-content:center;font-size:.85rem;flex:none}
+.board{background:#140B26;color:#F2EEFB;border-radius:22px;padding:22px;box-shadow:var(--shadow);font-size:.95rem}
+.board-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.board-h strong{font-size:1.2rem;letter-spacing:-.01em}
+.live{display:inline-flex;align-items:center;gap:8px;font-size:.78rem;font-weight:700;color:#C9B8FF;letter-spacing:.08em}
+.live::before{content:"";width:8px;height:8px;border-radius:50%;background:#34D399;box-shadow:0 0 0 0 rgba(52,211,153,.6);animation:pulse 1.6s infinite}
+@keyframes pulse{70%{box-shadow:0 0 0 10px rgba(52,211,153,0)}100%{box-shadow:0 0 0 0 rgba(52,211,153,0)}}
+.cols{display:grid;grid-template-columns:1.3fr 1fr;gap:14px}
+.col{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px;min-height:290px}
+.col h4{margin:0 0 10px;font-size:.82rem;letter-spacing:.06em;text-transform:uppercase;color:#BFB2E0}
+.col.ready h4{color:#7EE2B8}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 10px;border-radius:10px;background:rgba(255,255,255,.04);margin-bottom:7px;animation:in .45s ease}
+.row .n{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.row .n small{display:block;color:#A99CC8;font-weight:500;font-size:.78rem}
+.st{font-size:.75rem;font-weight:700;padding:4px 10px;border-radius:999px;white-space:nowrap}
+.st.p{background:#2C3F78;color:#DCE6FF}.st.s{background:#7A4D08;color:#FFF0D4}.st.c{background:#155E43;color:#DFFCEF}
+.col.ready .row{background:rgba(52,211,153,.10)}
+.col.ready .row:first-of-type{outline:1.5px solid rgba(126,226,184,.6)}
+@keyframes in{from{opacity:0;transform:translateY(-6px)}}
+@media (max-width:960px){.sim{grid-template-columns:1fr}}
+@media (max-width:520px){.cols{grid-template-columns:1fr}.col{min-height:0}}
+
+/* Por dentro */
+.inside{display:grid;grid-template-columns:1.35fr .65fr;gap:40px;align-items:center;margin-top:44px}
+.callouts{display:grid;gap:16px}
+.callout{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px 20px}
+.callout b{display:flex;align-items:center;gap:10px;font-size:1.02rem;margin-bottom:4px}
+.callout b i{width:12px;height:12px;border-radius:4px;flex:none}
+.callout p{margin:0;color:var(--muted);font-size:.95rem}
+.tv-toggle{display:inline-flex;background:#fff;border:1px solid var(--line);border-radius:999px;padding:4px;margin-bottom:18px}
+.tv-toggle button{border:0;background:transparent;font:inherit;font-weight:700;color:var(--muted);padding:8px 16px;border-radius:999px;cursor:pointer;font-size:.9rem}
+.tv-toggle button[aria-pressed="true"]{background:var(--purple);color:#fff}
+@media (max-width:960px){.inside{grid-template-columns:1fr}}
+
+/* Demonstração */
+.demo-box{display:grid;grid-template-columns:1.1fr .9fr;gap:36px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:28px;padding:44px;box-shadow:var(--shadow-s)}
+.demo-box table{width:100%;border-collapse:separate;border-spacing:0;border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.demo-box td{padding:13px 16px;border-bottom:1px solid var(--line);font-size:.96rem}
+.demo-box tr:last-child td{border-bottom:0}
+.demo-box tr td:first-child{font-weight:700}
+.demo-box code{background:var(--soft-2);color:var(--purple);padding:3px 9px;border-radius:6px;font-weight:700;font-size:.92rem}
+@media (max-width:900px){.demo-box{grid-template-columns:1fr;padding:28px 22px}}
+
+/* Chamada final */
+.final{background:linear-gradient(140deg,#7C3AED 0%,#5B21B6 45%,#2E1065 100%);color:#fff;border-radius:32px;padding:72px 40px;text-align:center;position:relative;overflow:hidden}
+.final::before,.final::after{content:"";position:absolute;border-radius:50%;background:rgba(196,181,253,.25);filter:blur(10px)}
+.final::before{width:300px;height:300px;left:-80px;top:-100px}
+.final::after{width:240px;height:240px;right:-60px;bottom:-90px}
+.final > *{position:relative}
+.final .label::before{background:#fff}
+.final p{color:#E4DAFF;font-size:1.15rem;max-width:620px;margin:16px auto 0}
+.final .acts{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:32px}
+@media (max-width:560px){.final{padding:48px 22px;border-radius:24px}}
+
+/* Rodapé */
+footer{padding:64px 0 32px;background:#fff}
+.fgrid{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:32px}
+.fgrid h4{margin:0 0 14px;font-size:.95rem}
+.fgrid ul{list-style:none;margin:0;padding:0}
+.fgrid li{margin:8px 0}
+.fgrid a{color:var(--muted);text-decoration:none;font-size:.95rem}
+.fgrid a:hover{color:var(--purple)}
+.fbase{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;border-top:1px solid var(--line);margin-top:44px;padding-top:22px;color:var(--muted);font-size:.9rem}
+@media (max-width:820px){.fgrid{grid-template-columns:1fr 1fr}}
+
+.reveal{opacity:0;transform:translateY(18px);transition:opacity .6s ease, transform .6s ease}
+.reveal.on{opacity:1;transform:none}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}.reveal{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+
+<header class="top" id="top">
+  <div class="wrap nav">
+    <a class="brand" href="#inicio" aria-label="Eva Flow, início"><img src="assets/logo.svg" alt=""><span><b>Eva Flow</b><small>por Eva Connect</small></span></a>
+    <ul>
+      <li><a href="#frentes">Soluções</a></li>
+      <li><a href="#experimente">Ao vivo</a></li>
+      <li><a href="#por-dentro">Painel da TV</a></li>
+      <li><a href="#demonstracao">Demonstração</a></li>
+    </ul>
+    <a class="btn btn-primary" href="#contato">Falar com a gente</a>
+  </div>
+</header>
+
+<main id="inicio">
+<section class="hero">
+  <div class="blob a"></div><div class="blob b"></div>
+  <div class="wrap hero-grid">
+    <div>
+      <span class="label">Separação de pedidos em tempo real</span>
+      <h1>Do balcão ao estoque, <span>sem papel e sem correria.</span></h1>
+      <p class="sub">O Eva Flow conecta vendas, estoque e cliente numa única informação. O vendedor registra, o estoque é avisado na hora, o cliente acompanha na TV e a gestão vê tudo.</p>
+      <div class="acts">
+        <a class="btn btn-primary" href="demo.html">Testar a demonstração
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        <a class="btn btn-outline" href="#frentes">Ver como funciona</a>
+      </div>
+      <div class="points">
+        <div><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2.6" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>Funciona no navegador: PC, tablet, celular e smart TV.</div>
+        <div><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2.6" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>Pendências de separação e de pagamento sempre à vista.</div>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="device"><img src="assets/tv-claro.png" alt="Painel da TV do Eva Flow com pedidos em andamento e pedidos prontos para retirada" width="1920" height="1080"></div>
+      <div class="device-stand"></div>
+      <div class="floating f2"><i style="background:#EDE4FF;color:#6D28D9">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></i>
+        <span>Novo pedido 5115<small>Estoque avisado agora</small></span></div>
+      <div class="floating f1"><i style="background:#DFF7EC;color:#0F8A5F">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg></i>
+        <span>Pronto para retirada<small>Restaurante Sabor · 5109</small></span></div>
+    </div>
+  </div>
+</section>
+
+<div class="marquee" aria-hidden="true">
+  <div class="track">
+    <span class="chip">Vendas</span><span class="chip">Estoque</span><span class="chip">Painel da TV</span><span class="chip">Administração</span><span class="chip">Alerta sonoro</span><span class="chip">Pendências em destaque</span><span class="chip">Controle de pagamento</span><span class="chip">Planilha CSV</span><span class="chip">Sua logo</span><span class="chip">Tema claro e escuro</span><span class="chip">Senha individual</span>
+    <span class="chip">Vendas</span><span class="chip">Estoque</span><span class="chip">Painel da TV</span><span class="chip">Administração</span><span class="chip">Alerta sonoro</span><span class="chip">Pendências em destaque</span><span class="chip">Controle de pagamento</span><span class="chip">Planilha CSV</span><span class="chip">Sua logo</span><span class="chip">Tema claro e escuro</span><span class="chip">Senha individual</span>
+  </div>
+</div>
+
+<section id="frentes">
+  <div class="wrap">
+    <div class="head-row reveal">
+      <div><span class="label">Quatro frentes</span><h2>Uma tela certa para cada setor.</h2></div>
+      <div class="car-ctrl"><span>Arraste para ver cada frente</span>
+        <button type="button" id="prev" aria-label="Frente anterior"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
+        <button type="button" id="next" aria-label="Próxima frente"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+      </div>
+    </div>
+    <div class="carousel" id="carousel" tabindex="0" aria-label="Frentes do Eva Flow">
+      <article class="front">
+        <div class="pic"><img src="assets/vendas.png" alt="Tela de Vendas" loading="lazy" width="1440" height="900"></div>
+        <div class="txt"><span class="num">01 · VENDAS</span><h3>Registro em segundos, no balcão ou no celular.</h3>
+          <ul><li>Só dois campos: cliente e número do pedido.</li><li>Vendedor, data e hora entram sozinhos.</li><li>Acompanha o status dos próprios pedidos.</li><li>Bloqueia número repetido na fila.</li></ul></div>
+      </article>
+      <article class="front">
+        <div class="pic"><img src="assets/estoque.png" alt="Tela do Estoque com aviso de novo pedido" loading="lazy" width="1440" height="900"></div>
+        <div class="txt"><span class="num">02 · ESTOQUE</span><h3>Nenhum pedido novo passa batido.</h3>
+          <ul><li>Som e aviso em destaque a cada pedido novo.</li><li>Separação: Pendente, Em separação, Concluído.</li><li>Pagamento: Pendente ou Baixado.</li><li>Pedidos de dias anteriores sobem para o topo.</li></ul></div>
+      </article>
+      <article class="front">
+        <div class="pic"><img src="assets/tv-claro.png" alt="Painel da TV" loading="lazy" width="1920" height="1080"></div>
+        <div class="txt"><span class="num">03 · PAINEL DA TV</span><h3>O cliente vê, sem precisar perguntar.</h3>
+          <ul><li>Em andamento e pendências de um lado.</li><li>Os 10 últimos prontos para retirada do outro.</li><li>Atualiza sozinho e troca de página se precisar.</li><li>Tema claro ou escuro, com a sua logo.</li></ul></div>
+      </article>
+      <article class="front">
+        <div class="pic"><img src="assets/admin.png" alt="Tela de Administração" loading="lazy" width="1440" height="900"></div>
+        <div class="txt"><span class="num">04 · ADMINISTRAÇÃO</span><h3>Gestão do dia, do mês e de qualquer período.</h3>
+          <ul><li>Quadro de pendências em aberto.</li><li>Totais por vendedor e por quem liberou.</li><li>Exportação em CSV.</li><li>Equipe, senhas, logo e exclusão de pedidos com erro.</li></ul></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section id="experimente" class="soft">
+  <div class="wrap sim">
+    <div class="reveal">
+      <span class="label">Experimente</span>
+      <h2>Veja um pedido atravessar a loja.</h2>
+      <p class="lead">Clique em registrar e acompanhe o caminho do pedido no painel ao lado, do jeito que ele aparece na TV da loja.</p>
+      <ul class="sim-steps">
+        <li><b>1</b>O vendedor registra cliente e número do pedido.</li>
+        <li><b>2</b>O estoque recebe o alerta e começa a separar.</li>
+        <li><b>3</b>Ao concluir, o cliente vê o pedido em "Pronto para retirada".</li>
+      </ul>
+      <div class="sim-ctrl">
+        <button class="btn btn-primary" id="sim-add" type="button">Registrar uma venda</button>
+        <a class="btn btn-outline" href="demo.html">Abrir o sistema completo</a>
+      </div>
+    </div>
+    <div class="board reveal" aria-live="polite">
+      <div class="board-h"><strong>Acompanhe seu pedido</strong><span class="live">AO VIVO</span></div>
+      <div class="cols">
+        <div class="col"><h4>Em andamento</h4><div id="sim-and"></div></div>
+        <div class="col ready"><h4>Pronto para retirada</h4><div id="sim-ok"></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="por-dentro">
+  <div class="wrap">
+    <div class="reveal"><span class="label">Por dentro</span><h2>O painel que a loja inteira enxerga.</h2>
+    <p class="lead">Basta abrir o link numa smart TV ou num computador ligado à TV. O painel se atualiza sozinho, em segundos.</p></div>
+    <div class="inside">
+      <div class="reveal">
+        <div class="tv-toggle" role="group" aria-label="Tema do painel">
+          <button type="button" aria-pressed="true" data-tv="claro">Tema claro</button>
+          <button type="button" aria-pressed="false" data-tv="escuro">Tema escuro</button>
+        </div>
+        <div class="device"><img id="tvimg" src="assets/tv-claro.png" alt="Painel da TV do Eva Flow" loading="lazy" width="1920" height="1080"></div>
+        <div class="device-stand"></div>
+      </div>
+      <div class="callouts">
+        <div class="callout reveal"><b><i style="background:#D9483B"></i>Pendências primeiro</b><p>Separações atrasadas e pedidos concluídos sem baixa do pagamento ficam no topo, em vermelho.</p></div>
+        <div class="callout reveal"><b><i style="background:#2FA36B"></i>Pronto para retirada</b><p>Os 10 últimos concluídos, com o mais recente em destaque, para o cliente ir direto ao estoque.</p></div>
+        <div class="callout reveal"><b><i style="background:#7C3AED"></i>Com a sua marca</b><p>Logo da empresa, relógio e tema claro ou escuro conforme o ambiente da loja.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="demonstracao" class="soft">
+  <div class="wrap">
+    <div class="demo-box reveal">
+      <div>
+        <span class="label">Demonstração</span>
+        <h2>Teste agora, com dados de exemplo.</h2>
+        <p class="lead">É o sistema completo rodando no seu navegador, sem cadastro. Abra o Estoque numa aba e a TV em outra, simule uma venda e veja o alerta tocar e a TV mudar na hora.</p>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:26px"><a class="btn btn-primary" href="demo.html">Abrir a demonstração</a><a class="btn btn-outline" href="demo.html#tv">Abrir o painel da TV</a></div>
+      </div>
+      <table aria-label="Acessos de teste">
+        <tr><td>Vendas</td><td>Ana ou Bruno</td><td><code>demo123</code></td></tr>
+        <tr><td>Estoque</td><td>Carla ou Diego</td><td><code>demo123</code></td></tr>
+        <tr><td>Administração</td><td>—</td><td><code>admin123</code></td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="contato">
+  <div class="wrap">
+    <div class="final reveal">
+      <span class="label" style="background:rgba(255,255,255,.16);color:#fff">Próximo passo</span>
+      <h2>Vamos organizar a separação da sua loja?</h2>
+      <p>Fale com a Eva Connect para uma apresentação guiada e uma proposta para a sua operação, sem compromisso.</p>
+      <div class="acts">
+        <a class="btn btn-white" href="mailto:adm@evaconnect.com.br?subject=Eva%20Flow%20-%20quero%20conhecer">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>adm@evaconnect.com.br</a>
+        <a class="btn btn-ghost-w" href="demo.html">Testar a demonstração</a>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="fgrid">
+      <div>
+        <a class="brand" href="#inicio"><img src="assets/logo.svg" alt=""><span><b>Eva Flow</b><small>Fluxos operacionais</small></span></a>
+        <p style="color:var(--muted);font-size:.95rem;max-width:300px;margin-top:14px">Separação de pedidos em tempo real, do balcão ao estoque. Um produto Eva Connect.</p>
+      </div>
+      <div><h4>Soluções</h4><ul><li><a href="#frentes">Vendas</a></li><li><a href="#frentes">Estoque</a></li><li><a href="#por-dentro">Painel da TV</a></li><li><a href="#frentes">Administração</a></li></ul></div>
+      <div><h4>Eva Flow</h4><ul><li><a href="#experimente">Ao vivo</a></li><li><a href="demo.html">Demonstração</a></li></ul></div>
+      <div><h4>Falar com a gente</h4><ul><li><a href="mailto:adm@evaconnect.com.br">adm@evaconnect.com.br</a></li><li><a href="demo.html">Testar a demonstração</a></li></ul></div>
+    </div>
+    <div class="fbase"><span>© <span id="ano">2026</span> Eva Connect. Todos os direitos reservados.</span><span>Eva Flow · Fluxos operacionais</span></div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  var $=function(s){return document.querySelector(s);};
+  $("#ano").textContent=new Date().getFullYear();
+  var hdr=$("#top"); addEventListener("scroll",function(){hdr.classList.toggle("scrolled",scrollY>8);},{passive:true});
+
+  // Revelar ao rolar
+  var io=("IntersectionObserver" in window)?new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add("on");io.unobserve(e.target);}});},{threshold:.12}):null;
+  document.querySelectorAll(".reveal").forEach(function(el){ if(io) io.observe(el); else el.classList.add("on"); });
+
+  // Carrossel
+  var car=$("#carousel");
+  function step(d){ var c=car.querySelector(".front"); car.scrollBy({left:d*(c.offsetWidth+22),behavior:"smooth"}); }
+  $("#prev").onclick=function(){step(-1);}; $("#next").onclick=function(){step(1);};
+
+  // Tema do painel
+  document.querySelectorAll("[data-tv]").forEach(function(b){ b.onclick=function(){
+    document.querySelectorAll("[data-tv]").forEach(function(x){x.setAttribute("aria-pressed",x===b?"true":"false");});
+    $("#tvimg").src="assets/tv-"+b.dataset.tv+".png";
+  };});
+
+  // Simulação do painel
+  var nomes=["Mercado Bom Preço","Construtora Lima","Padaria Pão Quente","Oficina do Zé","Hotel Beira-Mar","Farmácia Vida","Restaurante Sabor","Escola Aprender","Pousada Sol","Auto Peças Rocha","Marcenaria Arte","Clínica Bem-Estar"];
+  var vend=["Ana","Bruno"], seq=5201, andamento=[], prontos=[], idx=0;
+  var LBL={p:"Aguardando",s:"Em separação",c:"Concluído"};
+  function esc(t){return String(t).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+  function draw(){
+    $("#sim-and").innerHTML = andamento.length ? andamento.map(function(p){return '<div class="row"><span class="n">'+esc(p.c)+'<small>Pedido '+p.n+' · '+p.v+'</small></span><span class="st '+p.s+'">'+LBL[p.s]+'</span></div>';}).join("") : '<p style="color:#A99CC8;margin:8px 4px">Nenhum pedido em andamento.</p>';
+    $("#sim-ok").innerHTML = prontos.length ? prontos.map(function(p){return '<div class="row"><span class="n">'+esc(p.c)+'<small>Pedido '+p.n+'</small></span><span class="st c">'+p.h+'</span></div>';}).join("") : '<p style="color:#A99CC8;margin:8px 4px">Ainda nenhum.</p>';
+  }
+  function hora(){return new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});}
+  function nova(){
+    var p={c:nomes[idx++%nomes.length],n:seq++,v:vend[seq%2],s:"p"};
+    andamento.push(p); if(andamento.length>5) andamento.shift(); draw();
+    setTimeout(function(){p.s="s";draw();},2200);
+    setTimeout(function(){ var i=andamento.indexOf(p); if(i>=0) andamento.splice(i,1); p.h=hora(); prontos.unshift(p); prontos=prontos.slice(0,5); draw(); },5200);
+  }
+  $("#sim-add").onclick=nova;
+  [0,1,2].forEach(function(i){ prontos.push({c:nomes[idx++],n:seq++,v:vend[i%2],s:"c",h:hora()}); });
+  [0,1].forEach(function(i){ andamento.push({c:nomes[idx++],n:seq++,v:vend[i%2],s:i?"p":"s"}); });
+  draw();
+  var auto=null, board=$(".board");
+  if(io && !matchMedia("(prefers-reduced-motion: reduce)").matches){
+    new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ if(!auto){ nova(); auto=setInterval(nova,6500);} } else { clearInterval(auto); auto=null; } }); },{threshold:.4}).observe(board);
+  }
+
+})();
+</script>
+</body>
+</html>
